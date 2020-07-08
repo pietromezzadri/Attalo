@@ -1,0 +1,59 @@
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include "displayManager.h"
+#include "renderer.h"
+#include "input.h"
+
+#include <iostream>
+
+// settings
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+int main()
+{
+	// glfw: initialize and configure
+	// ------------------------------
+	displayManager dManager = displayManager::displayManager();
+
+	GLFWwindow* window = dManager.getWindow(SCR_WIDTH, SCR_HEIGHT, "Learn OpenGL");
+
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, dManager.framebuffer_size_callback);
+
+	// glad: load all OpenGL function pointers
+	// ---------------------------------------
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
+
+	input inputHandler = input::input();
+	renderer mainRenderer = renderer::renderer();
+
+	// render loop
+	// -----------
+	while (!glfwWindowShouldClose(window))
+	{
+		// input
+		// -----
+		inputHandler.processInput(window);
+
+		// render
+		// ------
+		mainRenderer.clearScreen();
+
+		dManager.update(window);
+	}
+
+	return 0;
+}
+
+
