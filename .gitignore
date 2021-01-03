@@ -1,0 +1,7 @@
+glfw/*
+build/*
+lib/*
+*.dll
+*.json
+*.swp
+*.back
