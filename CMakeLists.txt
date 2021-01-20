@@ -14,8 +14,9 @@ set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 set(GLAD "C:/MinGW/include/glad/glad.h"
         "lib/src/glad.c")
 
-set(SOURCE_FILES "src/main.cpp" "src/displayManager.cpp"
-           "src/input.cpp" "src/renderer.cpp" "src/stb_image.cpp")
+set(SOURCE_FILES "src/main.cpp" "src/camera.cpp"
+           "src/input.cpp" "src/renderer.cpp" "src/stb_image.cpp"
+           "src/engine.cpp")
 
 
 add_executable(Attalo ${SOURCE_FILES} ${GLAD})

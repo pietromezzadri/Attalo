@@ -1,29 +1,34 @@
 #pragma once
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <vector>
+#include <iostream>
 
-class renderer
+#include "texture.h"
+#include "stb_image.h"
+
+class Renderer
 {
 public:
-	renderer();
-	~renderer();
+	Renderer();
+	~Renderer();
 
 public:
-	const char *vertexShaderSource = "#version 330 core\n"
-		"layout (location = 0) in vec3 aPos;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-		"}\0";
-	const char *fragmentShaderSource = "#version 330 core\n"
-		"out vec4 FragColor;\n"
-		"void main()\n"
-		"{\n"
-		"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-		"}\n\0";
-
-
-public:
+	void update(GLFWwindow* window);
 	void clearScreen();
+	void loadBuffers(float* vertices);
+	void loadTexture(Texture* texture);
+	void activateTexture2d(Texture* textures);
+	void setAttibutePoniters();
+	void drawArrays();
+
+public:
+	unsigned int VBO, VAO;
+	Texture texture;
+	glm::mat4 model;
 
 };
 
