@@ -5,8 +5,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 Engine::Engine() 
 {
-    std::cout << "HERE5" << std::endl;
-
     screen_width = 800;
     screen_height = 600;
     title = "Attalo";
@@ -28,8 +26,6 @@ Engine::Engine()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    std::cout << "HERE6" << std::endl;
-
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -38,7 +34,6 @@ Engine::Engine()
 
     // Enable GL configs
     glEnable(GL_DEPTH_TEST);
-    std::cout << "HERE7" << std::endl;
 }
 
 GLFWwindow* Engine::createWindow(int width, int height, const char* title)
@@ -55,7 +50,6 @@ GLFWwindow* Engine::createWindow(int width, int height, const char* title)
 
 void Engine::Run() 
 {
-    std::cout << "HERE" << std::endl;
     // Initialize shader
     Shader mainShader("../src/shader.vert", "../src/shader.frag");
 
