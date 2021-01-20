@@ -1,14 +1,29 @@
 #pragma once
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
-class input
+#include "camera.h"
+#include "mouse.h"
+
+class Input
 {
 public:
-	input();
-	~input();
+	Input();
+	~Input();
 
 public:
-	void processInput(GLFWwindow *window);
+	Mouse mouse;
+
+public:
+	void processInput(GLFWwindow* window, Camera* camera);
+	void processMouse(GLFWwindow* window, Camera* camera);
+
+private:
+	void performAction(const char* state, const char* input);
 
 };
 
