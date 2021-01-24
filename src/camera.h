@@ -15,7 +15,7 @@ public:
     ~Camera();
 
 public:
-    void createTransformations();
+    void createTransformations(Screen* screen);
 
 public:
     glm::vec3 eye, center, up, position;

@@ -158,6 +158,7 @@ void Engine::Run()
     input.mouse.sensitivity = 0.08f;
     input.mouse.yaw = -90.0f;
     input.mouse.pitch = 0.0f;
+    input.mouse.roll = 0.0f;
 
     // render loop
     // -----------
@@ -171,6 +172,8 @@ void Engine::Run()
         input.processMouse(window, &camera);
         input.processInput(window, &camera);
 
+        camera.eye.y = 0.0f;
+
         renderer.clearScreen();
 
         renderer.activateTexture2d(&texture1);
@@ -178,7 +181,7 @@ void Engine::Run()
 
         mainShader.use();
 
-        camera.createTransformations();
+        camera.createTransformations(&screen);
 
         // pass transformation matrices to the shader
         mainShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
@@ -187,6 +190,7 @@ void Engine::Run()
 
         // render boxes
         glBindVertexArray(renderer.VAO);
+
         for (unsigned int i = 0; i < 10; i++)
         {
             // calculate the model matrix for each object and pass it to shader before drawing
