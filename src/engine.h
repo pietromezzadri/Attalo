@@ -14,6 +14,7 @@
 #include "renderer.h"
 #include "camera.h"
 #include "input.h"
+#include "object.h"
 
 #include <iostream>
 #include <filesystem>

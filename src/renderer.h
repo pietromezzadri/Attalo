@@ -19,14 +19,12 @@ public:
 public:
 	void update(GLFWwindow* window);
 	void clearScreen();
-	void loadBuffers(float* vertices);
 	void loadTexture(Texture* texture);
 	void activateTexture2d(Texture* textures);
 	void setAttibutePoniters();
 	void drawArrays();
 
 public:
-	unsigned int VBO, VAO;
 	Texture texture;
 	glm::mat4 model;
 
