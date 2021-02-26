@@ -51,7 +51,8 @@ GLFWwindow* Engine::createWindow(int width, int height, const char* title)
 void Engine::Run() 
 {
     // Initialize shader
-    Shader mainShader("../src/shader.vert", "../src/shader.frag");
+    Shader lightShader("../src/color_shader.vert", "../src/light_shader.frag");
+    Shader colorShader("../src/color_shader.vert", "../src/color_shader.frag");
 
     Screen screen = Screen();
 
@@ -61,6 +62,8 @@ void Engine::Run()
     Input input = Input();
     Renderer renderer = Renderer();
     Camera camera = Camera(&screen);
+    Object colorCube = Object();
+    Object lightCube = Object();
 
     float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -105,6 +108,8 @@ void Engine::Run()
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
+
+    
     // world space positions of our cubes
     glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f,  0.0f,  0.0f),
@@ -119,11 +124,17 @@ void Engine::Run()
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-    renderer.loadBuffers(vertices);
+	glGenVertexArrays(1, &colorCube.VAO);
+    glGenVertexArrays(1, &lightCube.VAO);
+    glGenBuffers(1, &colorCube.VBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, colorCube.VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindVertexArray(colorCube.VAO);
+    renderer.setAttibutePoniters();
+
+    glBindVertexArray(lightCube.VAO);
     renderer.setAttibutePoniters();
     
     Texture texture1, texture2;
@@ -138,9 +149,9 @@ void Engine::Run()
     renderer.loadTexture(&texture1);
     renderer.loadTexture(&texture2);
 
-    mainShader.use();
-    mainShader.setInt("texture1", 0);
-    mainShader.setInt("texture2", 1);
+    colorShader.use();
+    colorShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+    colorShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
 
     screen.deltaTime = 0;
     float lastFrame = 0;
@@ -159,6 +170,9 @@ void Engine::Run()
     input.mouse.yaw = -90.0f;
     input.mouse.pitch = 0.0f;
     input.mouse.roll = 0.0f;
+
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
 
     // render loop
     // -----------
@@ -179,39 +193,54 @@ void Engine::Run()
         renderer.activateTexture2d(&texture1);
         renderer.activateTexture2d(&texture2);
 
-        mainShader.use();
+        colorShader.use();
 
         camera.createTransformations(&screen);
 
         // pass transformation matrices to the shader
-        mainShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        mainShader.setMat4("view", camera.view);
-        mainShader.setFloat("alpha", 0.2f);
+        colorShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        colorShader.setMat4("view", camera.view);
+        colorShader.setFloat("alpha", 0.2f);
 
         // render boxes
-        glBindVertexArray(renderer.VAO);
+        glBindVertexArray(colorCube.VAO);
 
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * (1.0f + i);
-            model = (i % 2 == 0 ? glm::rotate(model, glm::radians(angle) * (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f)) : 
-                glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f)) );
-            
-            mainShader.setMat4("model", model);
 
-            renderer.drawArrays();
-        }
+        // calculate the model matrix for each object and pass it to shader before drawing
+        glm::mat4 model = glm::mat4(1.0f);
+        
+        colorShader.setMat4("model", model);
+
+        renderer.drawArrays();
+
+        lightShader.use();
+
+        // pass transformation matrices to the shader
+        lightShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        lightShader.setMat4("view", camera.view);
+        lightShader.setFloat("alpha", 0.2f);
+
+        // render boxes
+        glBindVertexArray(lightCube.VAO);
+
+        // calculate the model matrix for each object and pass it to shader before drawing
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f)); 
+        
+        lightShader.setMat4("model", model);
+
+        renderer.drawArrays();
+
 
         renderer.update(window);
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &renderer.VAO);
-    glDeleteBuffers(1, &renderer.VBO);
+    glDeleteVertexArrays(1, &lightCube.VAO);
+    glDeleteVertexArrays(1, &colorCube.VAO);
+    glDeleteBuffers(1, &colorCube.VBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
