@@ -51,7 +51,7 @@ GLFWwindow* Engine::createWindow(int width, int height, const char* title)
 void Engine::Run() 
 {
     // Initialize shader
-    Shader lightShader("../src/color_shader.vert", "../src/light_shader.frag");
+    Shader lightShader("../src/light_shader.vert", "../src/light_shader.frag");
     Shader colorShader("../src/color_shader.vert", "../src/color_shader.frag");
 
     Screen screen = Screen();
@@ -65,63 +65,51 @@ void Engine::Run()
     Object colorCube = Object();
     Object lightCube = Object();
 
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    
-    // world space positions of our cubes
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
 	glGenVertexArrays(1, &colorCube.VAO);
@@ -132,12 +120,17 @@ void Engine::Run()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindVertexArray(colorCube.VAO);
-    renderer.setAttibutePoniters();
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
-    glBindVertexArray(lightCube.VAO);
-    renderer.setAttibutePoniters();
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
     
-    Texture texture1, texture2;
+    glBindVertexArray(lightCube.VAO);
+    // note that we update the lamp's position attribute's stride to reflect the updated buffer data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    /* Texture texture1, texture2;
 
     texture1.filename = "../src/container.jpg";
     texture1.glTexture = GL_TEXTURE0;
@@ -147,11 +140,8 @@ void Engine::Run()
     texture2.alpha = true;
 
     renderer.loadTexture(&texture1);
-    renderer.loadTexture(&texture2);
+    renderer.loadTexture(&texture2); */
 
-    colorShader.use();
-    colorShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-    colorShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
 
     screen.deltaTime = 0;
     float lastFrame = 0;
@@ -171,8 +161,6 @@ void Engine::Run()
     input.mouse.pitch = 0.0f;
     input.mouse.roll = 0.0f;
 
-    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
 
     // render loop
     // -----------
@@ -190,26 +178,27 @@ void Engine::Run()
 
         renderer.clearScreen();
 
-        renderer.activateTexture2d(&texture1);
-        renderer.activateTexture2d(&texture2);
+        /* renderer.activateTexture2d(&texture1);
+        renderer.activateTexture2d(&texture2); */
 
         colorShader.use();
+        colorShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        colorShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+        colorShader.setVec3("lightPos", lightPos);
 
         camera.createTransformations(&screen);
 
         // pass transformation matrices to the shader
         colorShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         colorShader.setMat4("view", camera.view);
-        colorShader.setFloat("alpha", 0.2f);
-
-        // render boxes
-        glBindVertexArray(colorCube.VAO);
-
 
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
         
         colorShader.setMat4("model", model);
+
+        // render boxes
+        glBindVertexArray(colorCube.VAO);
 
         renderer.drawArrays();
 
@@ -218,10 +207,6 @@ void Engine::Run()
         // pass transformation matrices to the shader
         lightShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         lightShader.setMat4("view", camera.view);
-        lightShader.setFloat("alpha", 0.2f);
-
-        // render boxes
-        glBindVertexArray(lightCube.VAO);
 
         // calculate the model matrix for each object and pass it to shader before drawing
         model = glm::mat4(1.0f);
@@ -229,6 +214,9 @@ void Engine::Run()
         model = glm::scale(model, glm::vec3(0.2f)); 
         
         lightShader.setMat4("model", model);
+
+        // render boxes
+        glBindVertexArray(lightCube.VAO);
 
         renderer.drawArrays();
 
