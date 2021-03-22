@@ -66,6 +66,7 @@ void Engine::Run()
     Object lightCube = Object();
 
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+    glm::vec3 lightPos2(-1.2f, 1.0f, -3.0f);
 
 
     float vertices[] = {
@@ -211,6 +212,17 @@ void Engine::Run()
         // calculate the model matrix for each object and pass it to shader before drawing
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f)); 
+        
+        lightShader.setMat4("model", model);
+
+        // render boxes
+        glBindVertexArray(lightCube.VAO);
+
+        renderer.drawArrays();
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos2);
         model = glm::scale(model, glm::vec3(0.2f)); 
         
         lightShader.setMat4("model", model);
