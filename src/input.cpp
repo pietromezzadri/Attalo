@@ -52,6 +52,14 @@ void Input::processInput(GLFWwindow *window, Camera* camera)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		camera->eye.y += camera->speed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	{
+		camera->eye.y -= camera->speed;
+	}
 }
 
 void Input::processMouse(GLFWwindow* window, Camera* camera)
