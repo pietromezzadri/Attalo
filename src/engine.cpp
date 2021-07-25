@@ -51,8 +51,8 @@ GLFWwindow* Engine::createWindow(int width, int height, const char* title)
 void Engine::Run() 
 {
     // Initialize shader
-    Shader lightShader("../src/light_shader.vert", "../src/light_shader.frag");
-    Shader colorShader("../src/color_shader.vert", "../src/color_shader.frag");
+    Shader lightShader("../src/shaders/light_shader.vert", "../src/shaders/light_shader.frag");
+    Shader colorShader("../src/shaders/color_shader.vert", "../src/shaders/color_shader.frag");
 
     Screen screen = Screen();
 
@@ -133,10 +133,10 @@ void Engine::Run()
     glEnableVertexAttribArray(0);
     /* Texture texture1, texture2;
 
-    texture1.filename = "../src/container.jpg";
+    texture1.filename = "../src/shaders/container.jpg";
     texture1.glTexture = GL_TEXTURE0;
 
-    texture2.filename = "../src/awesomeface.png";
+    texture2.filename = "../src/shaders/awesomeface.png";
     texture2.glTexture = GL_TEXTURE1;
     texture2.alpha = true;
 
@@ -175,7 +175,7 @@ void Engine::Run()
         input.processMouse(window, &camera);
         input.processInput(window, &camera);
 
-        camera.eye.y = 0.0f;
+        //camera.eye.y = 0.0f;
 
         renderer.clearScreen();
 
