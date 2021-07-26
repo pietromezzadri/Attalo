@@ -16,8 +16,8 @@ set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 set(GLAD "lib/src/glad.c")
 set(STB "lib/src/stb_image.cpp")
 
-set(SOURCE_FILES "src/main.cpp" "src/camera.cpp"
-           "src/input.cpp" "src/renderer.cpp"
+set(SOURCE_FILES "src/main.cpp" "src/camera/camera.cpp"
+           "src/input/input.cpp" "src/renderer/renderer.cpp"
            "src/engine.cpp")
 
 add_executable(Attalo ${SOURCE_FILES} ${GLAD} ${STB})

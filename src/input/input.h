@@ -7,7 +7,7 @@
 #include <glm/gtc/constants.hpp>
 #include <iostream>
 
-#include "camera.h"
+#include "../camera/camera.h"
 #include "mouse.h"
 
 class Input
