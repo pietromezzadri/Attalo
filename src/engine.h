@@ -6,15 +6,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
-#include <stb_image/stb_image.h>
 
-#include "screen.h"
-#include "texture.h"
-#include "shader.h"
-#include "renderer.h"
-#include "camera.h"
-#include "input.h"
-#include "object.h"
+#include "interfaces/screen.h"
+#include "interfaces/texture.h"
+#include "renderer/shader.h"
+#include "renderer/renderer.h"
+#include "camera/camera.h"
+#include "input/input.h"
+#include "interfaces/object.h"
 
 #include <iostream>
 #include <filesystem>

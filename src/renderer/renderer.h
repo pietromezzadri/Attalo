@@ -4,11 +4,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <stb_image/stb_image.h>
 #include <vector>
 #include <iostream>
 
-#include "texture.h"
+#include "../interfaces/texture.h"
+
+#include <stb_image/stb_image.h>
+
 
 class Renderer
 {
