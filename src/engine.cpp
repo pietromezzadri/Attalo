@@ -67,6 +67,7 @@ void Engine::Run()
 
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
     glm::vec3 lightPos2(-1.2f, 1.0f, -3.0f);
+    glm::vec3 cubePos(0.0f, 0.0f, 0.0f);
 
 
     float vertices[] = {
@@ -161,6 +162,7 @@ void Engine::Run()
     input.mouse.yaw = -90.0f;
     input.mouse.pitch = 0.0f;
     input.mouse.roll = 0.0f;
+    float yChange = -0.0005f;
 
 
     // render loop
@@ -176,6 +178,16 @@ void Engine::Run()
         input.processInput(window, &camera);
 
         //camera.eye.y = 0.0f;
+        lightPos.x = sin(glm::radians(40.f) * (float)glfwGetTime()) * 2.f;
+        lightPos.z = cos(glm::radians(40.f) * (float)glfwGetTime()) * 2.f;
+        yChange = lightPos.y >= 1.0f ? -0.0005f : lightPos.y <= -1.0f ? 0.0005f : yChange;
+        lightPos.y += yChange;
+
+
+        /* std::cout << "roll: " << input.mouse.roll << std::endl;
+        std::cout << "x: " << input.mouse.direction.x << std::endl;        
+        std::cout << "y: " << input.mouse.direction.y << std::endl;        
+        std::cout << "z: " << input.mouse.direction.z << std::endl; */
 
         renderer.clearScreen();
 
@@ -185,9 +197,13 @@ void Engine::Run()
         colorShader.use();
         colorShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         colorShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+        colorShader.setVec3("lightColor2", 0.0f, 0.0f, 1.0f);
         colorShader.setVec3("lightPos", lightPos);
+        colorShader.setVec3("lightPos2", lightPos2);
 
         camera.createTransformations(&screen);
+
+        
 
         // pass transformation matrices to the shader
         colorShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
@@ -195,6 +211,8 @@ void Engine::Run()
 
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePos);
+        model = glm::rotate(model, -glm::radians(35.f)*(float)glfwGetTime(), glm::vec3(0.0f,1.0f,1.0f));
         
         colorShader.setMat4("model", model);
 
