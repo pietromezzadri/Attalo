@@ -3,6 +3,6 @@
 class Screen
 {
 public:
-    int height, width;
+    float height, width;
     float deltaTime;
 };
