@@ -2,6 +2,10 @@
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+template <typename T>
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *object);
 
 Engine::Engine() 
 {
@@ -59,14 +63,14 @@ void Engine::Run()
     screen.width = screen_width;
     screen.height = screen_height;
 
-    Input input = Input();
+    Input input;
     Renderer renderer = Renderer();
-    Camera camera = Camera(&screen);
+    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
     Object colorCube = Object();
     Object lightCube = Object();
 
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-    glm::vec3 lightPos2(-1.2f, 1.0f, -3.0f);
+    glm::vec3 cubePos(0.0f, 0.0f, 0.0f);
 
 
     float vertices[] = {
@@ -131,36 +135,22 @@ void Engine::Run()
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    /* Texture texture1, texture2;
+    Texture texture1, texture2;
 
-    texture1.filename = "../src/shaders/container.jpg";
+    texture1.filename = "../images/container.jpg";
     texture1.glTexture = GL_TEXTURE0;
 
-    texture2.filename = "../src/shaders/awesomeface.png";
+    texture2.filename = "../images/awesomeface.png";
     texture2.glTexture = GL_TEXTURE1;
     texture2.alpha = true;
 
     renderer.loadTexture(&texture1);
-    renderer.loadTexture(&texture2); */
+    renderer.loadTexture(&texture2);
 
 
     screen.deltaTime = 0;
     float lastFrame = 0;
     float currentFrame = 0;
-    
-
-    camera.eye  = glm::vec3(0.0f, 0.0f,  3.0f);
-    camera.center = glm::vec3(0.0f, 0.0f, -1.0f);
-    camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
-    
-    input.mouse.x = screen.width/2;
-    input.mouse.y = screen.height/2;
-    input.mouse.lastX = input.mouse.x;
-    input.mouse.lastY = input.mouse.y;
-    input.mouse.sensitivity = 0.08f;
-    input.mouse.yaw = -90.0f;
-    input.mouse.pitch = 0.0f;
-    input.mouse.roll = 0.0f;
 
 
     // render loop
@@ -170,31 +160,35 @@ void Engine::Run()
         currentFrame = glfwGetTime();
         screen.deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        camera.speed = 20.0f * screen.deltaTime;
         
-        input.processMouse(window, &camera);
-        input.processInput(window, &camera);
-
-        //camera.eye.y = 0.0f;
+        input.process_mouse(window, &camera);
+        input.process_keyboard(window, &camera, screen.deltaTime);
 
         renderer.clearScreen();
 
-        /* renderer.activateTexture2d(&texture1);
-        renderer.activateTexture2d(&texture2); */
+        renderer.activateTexture2d(&texture1);
+        renderer.activateTexture2d(&texture2);
 
         colorShader.use();
         colorShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         colorShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
         colorShader.setVec3("lightPos", lightPos);
+        colorShader.setVec3("viewPos", camera.Position);
 
-        camera.createTransformations(&screen);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), screen.width / screen.height, 0.1f, 100.0f);
+
+        
 
         // pass transformation matrices to the shader
-        colorShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        colorShader.setMat4("view", camera.view);
+        colorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        
+        glm::mat4 view = camera.GetViewMatrix();
+        colorShader.setMat4("view", view);
 
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePos);
+        model = glm::rotate(model, -glm::radians(35.f)*(float)glfwGetTime(), glm::vec3(0.0f,1.0f,1.0f));
         
         colorShader.setMat4("model", model);
 
@@ -206,8 +200,8 @@ void Engine::Run()
         lightShader.use();
 
         // pass transformation matrices to the shader
-        lightShader.setMat4("projection", camera.projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        lightShader.setMat4("view", camera.view);
+        lightShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        lightShader.setMat4("view", view);
 
         // calculate the model matrix for each object and pass it to shader before drawing
         model = glm::mat4(1.0f);
@@ -215,23 +209,12 @@ void Engine::Run()
         model = glm::scale(model, glm::vec3(0.2f)); 
         
         lightShader.setMat4("model", model);
+        lightShader.setVec4("lightColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         // render boxes
         glBindVertexArray(lightCube.VAO);
 
         renderer.drawArrays();
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos2);
-        model = glm::scale(model, glm::vec3(0.2f)); 
-        
-        lightShader.setMat4("model", model);
-
-        // render boxes
-        glBindVertexArray(lightCube.VAO);
-
-        renderer.drawArrays();
-
 
         renderer.update(window);
     }
@@ -255,6 +238,14 @@ void Engine::Stop()
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+template <typename T>
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *object)
+{
+    object->ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 Engine::~Engine() 
