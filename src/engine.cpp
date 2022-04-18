@@ -70,7 +70,7 @@ void Engine::Run()
     Object lightCube = Object();
 
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-    glm::vec3 lightPos2(-1.2f, 1.0f, -3.0f);
+    glm::vec3 cubePos(0.0f, 0.0f, 0.0f);
 
 
     float vertices[] = {
@@ -164,8 +164,6 @@ void Engine::Run()
         input.process_mouse(window, &camera);
         input.process_keyboard(window, &camera, screen.deltaTime);
 
-        //camera.eye.y = 0.0f;
-
         renderer.clearScreen();
 
         renderer.activateTexture2d(&texture1);
@@ -179,6 +177,8 @@ void Engine::Run()
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), screen.width / screen.height, 0.1f, 100.0f);
 
+        
+
         // pass transformation matrices to the shader
         colorShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         
@@ -187,6 +187,8 @@ void Engine::Run()
 
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePos);
+        model = glm::rotate(model, -glm::radians(35.f)*(float)glfwGetTime(), glm::vec3(0.0f,1.0f,1.0f));
         
         colorShader.setMat4("model", model);
 
