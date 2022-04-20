@@ -44,7 +44,6 @@ public:
 		mouse.lastX = mouse.x;
 		mouse.lastY = mouse.y;
 
-
 		object->ProcessMouseMovement(mouse.xOffset, mouse.yOffset);
 	}
 	
