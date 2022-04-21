@@ -53,7 +53,8 @@ void Renderer::setAttibutePoniters()
     glEnableVertexAttribArray(1); */
 }
 
-void Renderer::drawArrays() { 
+void Renderer::drawArrays(int polygonMode) {
+    glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
