@@ -24,7 +24,7 @@ public:
 	void loadTexture(Texture* texture);
 	void activateTexture2d(Texture* textures);
 	void setAttibutePoniters();
-	void drawArrays();
+	void drawArrays(int polygonMode);
 
 public:
 	Texture texture;

@@ -70,6 +70,7 @@ void Engine::Run()
     Object lightCube = Object();
 
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+    glm::vec3 lightPos2(-2.0f, 0.0f, -3.0f);
     glm::vec3 cubePos(0.0f, 0.0f, 0.0f);
 
 
@@ -202,14 +203,44 @@ void Engine::Run()
         glm::vec3 diffuse = lightColor * glm::vec3(0.5f);
         glm::vec3 ambient = diffuse * glm::vec3(0.2f);
 
-        materialShader.setVec3("light.ambient",  ambient);
-        materialShader.setVec3("light.diffuse",  diffuse); // darken diffuse light a bit
-        materialShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-        materialShader.setVec3("light.position", lightPos);
+        glm::vec3 lightColor2(1.0f, 0.0f, 0.0f);
+        glm::vec3 diffuse2 = lightColor2 * glm::vec3(0.5f);
+        glm::vec3 ambient2 = diffuse2 * glm::vec3(0.2f);
+
+        // Point Light
+
+        materialShader.setVec3("pointLight[0].ambient",  ambient);
+        materialShader.setVec3("pointLight[0].diffuse",  diffuse); // darken diffuse pointLight a bit
+        materialShader.setVec3("pointLight[0].specular", 1.0f, 1.0f, 1.0f);
+        materialShader.setVec3("pointLight[0].position", lightPos);
         
-        materialShader.setFloat("light.constant", 1.0f);
-        materialShader.setFloat("light.linear", 0.09f);
-        materialShader.setFloat("light.quadratic", 0.032f);
+        materialShader.setFloat("pointLight[0].constant", 1.0f);
+        materialShader.setFloat("pointLight[0].linear", 0.09f);
+        materialShader.setFloat("pointLight[0].quadratic", 0.032f);
+
+        materialShader.setVec3("pointLight[1].ambient",  ambient);
+        materialShader.setVec3("pointLight[1].diffuse",  diffuse); // darken diffuse pointLight a bit
+        materialShader.setVec3("pointLight[1].specular", 1.0f, 1.0f, 1.0f);
+        materialShader.setVec3("pointLight[1].position", lightPos2);
+        
+        materialShader.setFloat("pointLight[1].constant", 1.0f);
+        materialShader.setFloat("pointLight[1].linear", 0.09f);
+        materialShader.setFloat("pointLight[1].quadratic", 0.032f);
+
+        // Spotlight
+
+        materialShader.setVec3("spotLight[0].position",  camera.Position);
+        materialShader.setVec3("spotLight[0].direction", camera.Front);
+        materialShader.setFloat("spotLight[0].cutOff",   glm::cos(glm::radians(12.5f)));
+        materialShader.setFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
+
+        materialShader.setVec3("spotLight[0].ambient",  ambient2);
+        materialShader.setVec3("spotLight[0].diffuse",  diffuse2); // darken diffuse spotLight a bit
+        materialShader.setVec3("spotLight[0].specular", 1.0f, 1.0f, 1.0f);
+        
+        materialShader.setFloat("spotLight[0].constant", 1.0f);
+        materialShader.setFloat("spotLight[0].linear", 0.09f);
+        materialShader.setFloat("spotLight[0].quadratic", 0.032f);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), screen.width / screen.height, 0.1f, 100.0f);
 
@@ -250,7 +281,7 @@ void Engine::Run()
             // render boxes
             glBindVertexArray(colorCube.VAO);
 
-            renderer.drawArrays();
+            renderer.drawArrays(GL_FILL);
         }
 
         lightShader.use();
@@ -270,7 +301,18 @@ void Engine::Run()
         // render boxes
         glBindVertexArray(lightCube.VAO);
 
-        renderer.drawArrays();
+        renderer.drawArrays(GL_FILL);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos2);
+        model = glm::scale(model, glm::vec3(0.2f)); 
+
+        lightShader.setMat4("model", model);
+
+        // render boxes
+        glBindVertexArray(lightCube.VAO);
+
+        renderer.drawArrays(GL_FILL);
 
         renderer.update(window);
     }
