@@ -9,10 +9,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *obje
 
 Engine::Engine() 
 {
-    screen_width = 800;
-    screen_height = 600;
+    screen_width = 1280;
+    screen_height = 720;
     title = "Attalo";
     version = "v0.0.2";
+    const char* window_title = (std::string(title) + " " + std::string(version)).c_str();
 
     // Initialize OpenGL and GLFW
     glfwInit();
@@ -25,7 +26,7 @@ Engine::Engine()
     #endif
 
     // Create the context and window
-    window = createWindow(screen_width, screen_height, title);
+    window = createWindow(screen_width, screen_height, window_title);
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -54,6 +55,8 @@ GLFWwindow* Engine::createWindow(int width, int height, const char* title)
 
 void Engine::Run() 
 {
+    const char* glsl_version = "#version 130";
+
     // Initialize shader
     Shader lightShader("../src/shaders/light_shader.vert", "../src/shaders/light_shader.frag");
     Shader materialShader("../src/shaders/material_shader.vert", "../src/shaders/material_shader.frag");
@@ -171,6 +174,24 @@ void Engine::Run()
     float lastFrame = 0;
     float currentFrame = 0;
 
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 lightColor2(0.0f, 1.0f, 0.0f);
 
     // render loop
     // -----------
@@ -179,9 +200,36 @@ void Engine::Run()
         currentFrame = glfwGetTime();
         screen.deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        if (camera.mouseEnabled == false)
+        {
+            ImGui::Begin("Another Window", &camera.mouseEnabled);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            lightColor = glm::vec3(clear_color.x, clear_color.y, clear_color.z);
+
+            if (ImGui::Button("Close Me"))
+            {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                camera.mouseEnabled = true;
+            }
+            ImGui::End();
+        }
+
         input.process_mouse(window, &camera);
         input.process_keyboard(window, &camera, screen.deltaTime);
+
+        if (input.lastKey == GLFW_KEY_ESCAPE)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            camera.mouseEnabled = false;
+            input.lastKey = 0;
+        }
 
         renderer.clearScreen();
 
@@ -199,11 +247,9 @@ void Engine::Run()
         materialShader.setInt("material.specular", boxSpecular.ID);
         materialShader.setFloat("material.shininess", 32.0f);
 
-        glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
         glm::vec3 diffuse = lightColor * glm::vec3(0.5f);
         glm::vec3 ambient = diffuse * glm::vec3(0.2f);
 
-        glm::vec3 lightColor2(1.0f, 0.0f, 0.0f);
         glm::vec3 diffuse2 = lightColor2 * glm::vec3(0.5f);
         glm::vec3 ambient2 = diffuse2 * glm::vec3(0.2f);
 
@@ -314,6 +360,9 @@ void Engine::Run()
 
         renderer.drawArrays(GL_FILL);
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         renderer.update(window);
     }
 
@@ -322,6 +371,10 @@ void Engine::Run()
     glDeleteVertexArrays(1, &lightCube.VAO);
     glDeleteVertexArrays(1, &colorCube.VAO);
     glDeleteBuffers(1, &colorCube.VBO);
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

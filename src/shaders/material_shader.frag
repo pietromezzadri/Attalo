@@ -15,6 +15,8 @@ struct Material
 
 struct PointLight 
 {
+    int enabled;
+
     vec3 position;
     
     vec3 ambient;
@@ -37,6 +39,8 @@ struct DirectionalLight
 
 struct SpotLight
 {
+    int enabled;
+
     vec3  position;
     vec3  direction;
     float cutOff;
