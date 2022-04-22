@@ -9,10 +9,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *obje
 
 Engine::Engine() 
 {
-    screen_width = 800;
-    screen_height = 600;
+    screen_width = 1280;
+    screen_height = 720;
     title = "Attalo";
     version = "v0.0.2";
+    const char* window_title = (std::string(title) + " " + std::string(version)).c_str();
 
     // Initialize OpenGL and GLFW
     glfwInit();
@@ -25,7 +26,7 @@ Engine::Engine()
     #endif
 
     // Create the context and window
-    window = createWindow(screen_width, screen_height, title);
+    window = createWindow(screen_width, screen_height, window_title);
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -54,6 +55,8 @@ GLFWwindow* Engine::createWindow(int width, int height, const char* title)
 
 void Engine::Run() 
 {
+    const char* glsl_version = "#version 130";
+
     // Initialize shader
     Shader lightShader("../src/shaders/light_shader.vert", "../src/shaders/light_shader.frag");
     Shader materialShader("../src/shaders/material_shader.vert", "../src/shaders/material_shader.frag");
@@ -70,6 +73,7 @@ void Engine::Run()
     Object lightCube = Object();
 
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+    glm::vec3 lightPos2(-2.0f, 0.0f, -3.0f);
     glm::vec3 cubePos(0.0f, 0.0f, 0.0f);
 
 
@@ -170,6 +174,24 @@ void Engine::Run()
     float lastFrame = 0;
     float currentFrame = 0;
 
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 lightColor2(0.0f, 1.0f, 0.0f);
 
     // render loop
     // -----------
@@ -178,9 +200,36 @@ void Engine::Run()
         currentFrame = glfwGetTime();
         screen.deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        if (camera.mouseEnabled == false)
+        {
+            ImGui::Begin("Another Window", &camera.mouseEnabled);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            lightColor = glm::vec3(clear_color.x, clear_color.y, clear_color.z);
+
+            if (ImGui::Button("Close Me"))
+            {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                camera.mouseEnabled = true;
+            }
+            ImGui::End();
+        }
+
         input.process_mouse(window, &camera);
         input.process_keyboard(window, &camera, screen.deltaTime);
+
+        if (input.lastKey == GLFW_KEY_ESCAPE)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            camera.mouseEnabled = false;
+            input.lastKey = 0;
+        }
 
         renderer.clearScreen();
 
@@ -192,20 +241,52 @@ void Engine::Run()
         materialShader.use();
         materialShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         materialShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
-        materialShader.setVec3("lightPos", lightPos);
         materialShader.setVec3("viewPos", camera.Position);
 
         materialShader.setInt("material.diffuse", boxTexture.ID);
         materialShader.setInt("material.specular", boxSpecular.ID);
         materialShader.setFloat("material.shininess", 32.0f);
 
-        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 diffuse = lightColor * glm::vec3(0.5f);
         glm::vec3 ambient = diffuse * glm::vec3(0.2f);
-        materialShader.setVec3("light.ambient",  ambient);
-        materialShader.setVec3("light.diffuse",  diffuse); // darken diffuse light a bit
-        materialShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-        materialShader.setVec3("light.position", lightPos);
+
+        glm::vec3 diffuse2 = lightColor2 * glm::vec3(0.5f);
+        glm::vec3 ambient2 = diffuse2 * glm::vec3(0.2f);
+
+        // Point Light
+
+        materialShader.setVec3("pointLight[0].ambient",  ambient);
+        materialShader.setVec3("pointLight[0].diffuse",  diffuse); // darken diffuse pointLight a bit
+        materialShader.setVec3("pointLight[0].specular", 1.0f, 1.0f, 1.0f);
+        materialShader.setVec3("pointLight[0].position", lightPos);
+        
+        materialShader.setFloat("pointLight[0].constant", 1.0f);
+        materialShader.setFloat("pointLight[0].linear", 0.09f);
+        materialShader.setFloat("pointLight[0].quadratic", 0.032f);
+
+        materialShader.setVec3("pointLight[1].ambient",  ambient);
+        materialShader.setVec3("pointLight[1].diffuse",  diffuse); // darken diffuse pointLight a bit
+        materialShader.setVec3("pointLight[1].specular", 1.0f, 1.0f, 1.0f);
+        materialShader.setVec3("pointLight[1].position", lightPos2);
+        
+        materialShader.setFloat("pointLight[1].constant", 1.0f);
+        materialShader.setFloat("pointLight[1].linear", 0.09f);
+        materialShader.setFloat("pointLight[1].quadratic", 0.032f);
+
+        // Spotlight
+
+        materialShader.setVec3("spotLight[0].position",  camera.Position);
+        materialShader.setVec3("spotLight[0].direction", camera.Front);
+        materialShader.setFloat("spotLight[0].cutOff",   glm::cos(glm::radians(12.5f)));
+        materialShader.setFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
+
+        materialShader.setVec3("spotLight[0].ambient",  ambient2);
+        materialShader.setVec3("spotLight[0].diffuse",  diffuse2); // darken diffuse spotLight a bit
+        materialShader.setVec3("spotLight[0].specular", 1.0f, 1.0f, 1.0f);
+        
+        materialShader.setFloat("spotLight[0].constant", 1.0f);
+        materialShader.setFloat("spotLight[0].linear", 0.09f);
+        materialShader.setFloat("spotLight[0].quadratic", 0.032f);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), screen.width / screen.height, 0.1f, 100.0f);
 
@@ -221,13 +302,33 @@ void Engine::Run()
         glm::mat4 model = glm::mat4(1.0f);
         //model = glm::translate(model, cubePos);
         //model = glm::rotate(model, -glm::radians(35.f)*(float)glfwGetTime(), glm::vec3(0.0f,1.0f,1.0f));
-        
-        materialShader.setMat4("model", model);
 
-        // render boxes
-        glBindVertexArray(colorCube.VAO);
+        glm::vec3 cubePositions[] = {
+            glm::vec3( 0.0f,  0.0f,  0.0f),
+            glm::vec3( 2.0f,  5.0f, -15.0f),
+            glm::vec3(-1.5f, -2.2f, -2.5f),
+            glm::vec3(-3.8f, -2.0f, -12.3f),
+            glm::vec3( 2.4f, -0.4f, -3.5f),
+            glm::vec3(-1.7f,  3.0f, -7.5f),
+            glm::vec3( 1.3f, -2.0f, -2.5f),
+            glm::vec3( 1.5f,  2.0f, -2.5f),
+            glm::vec3( 1.5f,  0.2f, -1.5f),
+            glm::vec3(-1.3f,  1.0f, -1.5f)
+        };
 
-        renderer.drawArrays();
+        for (int i = 0; i < 10; i++)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            materialShader.setMat4("model", model);
+            
+            // render boxes
+            glBindVertexArray(colorCube.VAO);
+
+            renderer.drawArrays(GL_FILL);
+        }
 
         lightShader.use();
 
@@ -246,7 +347,21 @@ void Engine::Run()
         // render boxes
         glBindVertexArray(lightCube.VAO);
 
-        renderer.drawArrays();
+        renderer.drawArrays(GL_FILL);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos2);
+        model = glm::scale(model, glm::vec3(0.2f)); 
+
+        lightShader.setMat4("model", model);
+
+        // render boxes
+        glBindVertexArray(lightCube.VAO);
+
+        renderer.drawArrays(GL_FILL);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         renderer.update(window);
     }
@@ -256,6 +371,10 @@ void Engine::Run()
     glDeleteVertexArrays(1, &lightCube.VAO);
     glDeleteVertexArrays(1, &colorCube.VAO);
     glDeleteBuffers(1, &colorCube.VBO);
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

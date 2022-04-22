@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(glfw)
 add_subdirectory(glm)
+add_subdirectory(imgui)
 
 find_package(OpenGL REQUIRED)
 
@@ -24,3 +25,4 @@ add_executable(Attalo ${SOURCE_FILES} ${GLAD} ${STB})
 target_link_libraries(Attalo OpenGL::GL)
 target_link_libraries(Attalo glfw)
 target_link_libraries(Attalo glm)
+target_link_libraries(Attalo imgui imgui-glfw imgui-opengl3)
