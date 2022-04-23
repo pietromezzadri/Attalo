@@ -4,8 +4,8 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-template <typename T>
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *object);
+/* template <typename T>
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *object); */
 
 Engine::Engine() 
 {
@@ -72,8 +72,6 @@ void Engine::Run()
     Object colorCube = Object();
     Object lightCube = Object();
 
-    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-    glm::vec3 lightPos2(-2.0f, 0.0f, -3.0f);
     glm::vec3 cubePos(0.0f, 0.0f, 0.0f);
 
 
@@ -190,8 +188,25 @@ void Engine::Run()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-    glm::vec3 lightColor2(0.0f, 1.0f, 0.0f);
+    
+    Spotlight spotlight = Spotlight();
+    Pointlight pointlight = Pointlight();
+    Pointlight pointlight2 = Pointlight();
+
+
+    pointlight.position = glm::vec3(1.2f, 1.0f, 2.0f);
+    pointlight2.position = glm::vec3(-2.0f, 0.0f, -3.0f);
+
+    pointlight.color = glm::vec3(1.0f, 1.0f, 1.0f);
+    pointlight2.color = glm::vec3(0.0f, 1.0f, 0.0f);
+    spotlight.color = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    pointlight.ID = 0;
+    pointlight2.ID = 1;
+
+    spotlight.ID = 0;
+
+    AppConsole console = AppConsole();
 
     // render loop
     // -----------
@@ -210,8 +225,9 @@ void Engine::Run()
         {
             ImGui::Begin("Another Window", &camera.mouseEnabled);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-            lightColor = glm::vec3(clear_color.x, clear_color.y, clear_color.z);
+            ImGui::ColorEdit3("Pointlight0", (float*)&pointlight.color);
+            ImGui::ColorEdit3("Pointlight1", (float*)&pointlight2.color);
+            ImGui::ColorEdit3("Spotlight0", (float*)&spotlight.color);
 
             if (ImGui::Button("Close Me"))
             {
@@ -219,6 +235,9 @@ void Engine::Run()
                 camera.mouseEnabled = true;
             }
             ImGui::End();
+            console.Draw("Console");
+
+            DocOpener().ShowExampleAppDocuments();
         }
 
         input.process_mouse(window, &camera);
@@ -240,34 +259,37 @@ void Engine::Run()
 
         materialShader.use();
         materialShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        materialShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+        materialShader.setVec3("lightColor",  pointlight.color);
         materialShader.setVec3("viewPos", camera.Position);
 
         materialShader.setInt("material.diffuse", boxTexture.ID);
         materialShader.setInt("material.specular", boxSpecular.ID);
         materialShader.setFloat("material.shininess", 32.0f);
 
-        glm::vec3 diffuse = lightColor * glm::vec3(0.5f);
-        glm::vec3 ambient = diffuse * glm::vec3(0.2f);
+        pointlight.diffuse = pointlight.color * glm::vec3(0.5f);
+        pointlight.ambient = pointlight.diffuse * glm::vec3(0.2f);
 
-        glm::vec3 diffuse2 = lightColor2 * glm::vec3(0.5f);
-        glm::vec3 ambient2 = diffuse2 * glm::vec3(0.2f);
+        pointlight2.diffuse = pointlight2.color * glm::vec3(0.5f);
+        pointlight2.ambient = pointlight2.diffuse * glm::vec3(0.2f);
+
+        spotlight.diffuse = spotlight.color * glm::vec3(0.5f);
+        spotlight.ambient = spotlight.diffuse * glm::vec3(0.2f);
 
         // Point Light
 
-        materialShader.setVec3("pointLight[0].ambient",  ambient);
-        materialShader.setVec3("pointLight[0].diffuse",  diffuse); // darken diffuse pointLight a bit
+        materialShader.setVec3("pointLight[0].ambient",  pointlight.ambient);
+        materialShader.setVec3("pointLight[0].diffuse",  pointlight.diffuse); // darken diffuse pointLight a bit
         materialShader.setVec3("pointLight[0].specular", 1.0f, 1.0f, 1.0f);
-        materialShader.setVec3("pointLight[0].position", lightPos);
+        materialShader.setVec3("pointLight[0].position", pointlight.position);
         
         materialShader.setFloat("pointLight[0].constant", 1.0f);
         materialShader.setFloat("pointLight[0].linear", 0.09f);
         materialShader.setFloat("pointLight[0].quadratic", 0.032f);
 
-        materialShader.setVec3("pointLight[1].ambient",  ambient);
-        materialShader.setVec3("pointLight[1].diffuse",  diffuse); // darken diffuse pointLight a bit
+        materialShader.setVec3("pointLight[1].ambient",  pointlight2.ambient);
+        materialShader.setVec3("pointLight[1].diffuse",  pointlight2.diffuse); // darken diffuse pointLight a bit
         materialShader.setVec3("pointLight[1].specular", 1.0f, 1.0f, 1.0f);
-        materialShader.setVec3("pointLight[1].position", lightPos2);
+        materialShader.setVec3("pointLight[1].position", pointlight2.position);
         
         materialShader.setFloat("pointLight[1].constant", 1.0f);
         materialShader.setFloat("pointLight[1].linear", 0.09f);
@@ -280,8 +302,8 @@ void Engine::Run()
         materialShader.setFloat("spotLight[0].cutOff",   glm::cos(glm::radians(12.5f)));
         materialShader.setFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
 
-        materialShader.setVec3("spotLight[0].ambient",  ambient2);
-        materialShader.setVec3("spotLight[0].diffuse",  diffuse2); // darken diffuse spotLight a bit
+        materialShader.setVec3("spotLight[0].ambient",  spotlight.ambient);
+        materialShader.setVec3("spotLight[0].diffuse",  spotlight.diffuse); // darken diffuse spotLight a bit
         materialShader.setVec3("spotLight[0].specular", 1.0f, 1.0f, 1.0f);
         
         materialShader.setFloat("spotLight[0].constant", 1.0f);
@@ -338,11 +360,11 @@ void Engine::Run()
 
         // calculate the model matrix for each object and pass it to shader before drawing
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
+        model = glm::translate(model, pointlight.position);
         model = glm::scale(model, glm::vec3(0.2f)); 
         
         lightShader.setMat4("model", model);
-        lightShader.setVec4("lightColor", glm::vec4(lightColor, 1.0f));
+        lightShader.setVec4("lightColor", glm::vec4(pointlight.color, 1.0f));
 
         // render boxes
         glBindVertexArray(lightCube.VAO);
@@ -350,10 +372,11 @@ void Engine::Run()
         renderer.drawArrays(GL_FILL);
 
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos2);
+        model = glm::translate(model, pointlight2.position);
         model = glm::scale(model, glm::vec3(0.2f)); 
 
         lightShader.setMat4("model", model);
+        lightShader.setVec4("lightColor", glm::vec4(pointlight2.color, 1.0f));
 
         // render boxes
         glBindVertexArray(lightCube.VAO);
@@ -393,11 +416,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-template <typename T>
+/* template <typename T>
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset, T *object)
 {
     object->ProcessMouseScroll(static_cast<float>(yoffset));
-}
+} */
 
 Engine::~Engine() 
 {

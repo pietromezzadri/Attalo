@@ -4,10 +4,14 @@
 class Spotlight
 {
 public:
+    int ID;
+
     int enabled;
 
-    glm::vec3  position;
-    glm::vec3  direction;
+    glm::vec3 color;
+
+    glm::vec3 position;
+    glm::vec3 direction;
     float cutOff;
     float outerCutOff;
     glm::vec3 ambient;
@@ -17,4 +21,4 @@ public:
     float constant;
     float linear;
     float quadratic;
-}
+};
