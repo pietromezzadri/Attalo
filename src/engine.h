@@ -12,11 +12,15 @@
 
 #include "interfaces/screen.h"
 #include "interfaces/texture.h"
+#include "interfaces/object.h"
+#include "interfaces/pointlight.h"
+#include "interfaces/spotlight.h"
 #include "renderer/shader.h"
 #include "renderer/renderer.h"
 #include "camera/camera.h"
 #include "input/input.h"
-#include "interfaces/object.h"
+#include "widgets/console.h"
+#include "widgets/document.h"
 
 #include <iostream>
 #include <filesystem>
